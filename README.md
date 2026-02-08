@@ -1,122 +1,84 @@
-# CrawlForge 🕷️🤖
+# 🕷️ CrawlForge
 
-AI-powered web crawler that extracts structured data using LLMs and stores it in Supabase.
+AI-powered web crawler with LLM data extraction. Crawl websites and extract structured data using natural language prompts.
+
+![CrawlForge Dashboard](./docs/screenshot.png)
 
 ## Features
 
-- **Multi-tenant** - Isolated workspaces with team support
-- **Visual Dashboard** - Configure crawlers without code
-- **LLM-Powered Extraction** - Use natural language prompts to define what data to extract
-- **Flexible Storage** - Results go directly to your Supabase tables
-- **Scheduling** - Run crawlers on a schedule or manually
-- **Self-Hostable** - Run on your own infrastructure with Ollama
+- **🌐 Smart Crawling** - Playwright-based crawling handles JavaScript-heavy sites
+- **🤖 AI Extraction** - Extract structured data using natural language prompts
+- **🏢 Multi-tenant** - Workspaces for teams with role-based access
+- **📊 Dashboard** - Beautiful UI to manage crawlers and view results
+- **⏰ Scheduling** - Cron-based recurring crawls
+- **🔌 Flexible LLMs** - Use Ollama (local) or OpenAI
 
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     CrawlForge Dashboard                      │
-│                    (Next.js + Supabase Auth)                  │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      Supabase Backend                         │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │   Tenants   │  │  Crawlers   │  │   Extraction Jobs   │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │    Runs     │  │   Results   │  │   Custom Tables     │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      Crawler Worker                           │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │  Playwright │  │   Ollama    │  │   Result Writer     │  │
-│  │  (fetching) │  │ (extraction)│  │   (to Supabase)     │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-```
-
-## Tech Stack
-
-- **Frontend**: Next.js 14 (App Router), Tailwind CSS, shadcn/ui
-- **Backend**: Supabase (Postgres, Auth, Row Level Security)
-- **Crawler**: Playwright (headless Chrome)
-- **LLM**: Ollama (local) or OpenAI-compatible APIs
-- **Queue**: pg_boss (Postgres-backed job queue)
-- **Language**: TypeScript throughout
-
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 
 - Node.js 20+
-- Docker & Docker Compose
-- Supabase CLI (or a Supabase cloud project)
-- Ollama (for local LLM)
+- pnpm 9+
+- Docker (for Supabase local)
+- Supabase CLI
 
 ### Installation
 
 ```bash
-# Clone the repo
+# Clone
 git clone https://github.com/rexlunae/crawl-forge.git
 cd crawl-forge
 
 # Install dependencies
 pnpm install
 
-# Copy environment template
+# Copy environment file
 cp .env.example .env.local
 
-# Start Supabase locally (or use cloud)
+# Start Supabase locally
 pnpm supabase start
 
-# Run database migrations
-pnpm db:migrate
+# Run migrations
+pnpm supabase db push
 
-# Start the development server
+# Start development servers
 pnpm dev
 ```
 
-### Configuration
+Open [http://localhost:3000](http://localhost:3000) to see the dashboard.
 
-Edit `.env.local`:
+### Running the Worker
 
-```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-key
+In a separate terminal:
 
-# Ollama (or OpenAI-compatible endpoint)
-LLM_PROVIDER=ollama
-OLLAMA_BASE_URL=http://localhost:11434
-
-# Optional: OpenAI
-# LLM_PROVIDER=openai
-# OPENAI_API_KEY=sk-...
+```bash
+pnpm --filter worker dev
 ```
 
-## Usage
+### Using Docker
 
-1. **Create a Tenant** - Sign up and create your workspace
-2. **Define a Crawler** - Set the URL pattern and extraction prompt
-3. **Configure Output** - Choose or create a Supabase table for results
-4. **Run** - Execute manually or set a schedule
+For a complete local setup with Ollama:
 
-### Example Extraction Prompt
+```bash
+cd docker
+docker-compose up -d
+```
+
+## Architecture
 
 ```
-Extract job postings from this page. For each job, return:
-- title: The job title
-- company: Company name
-- location: Job location (city, state, or "Remote")
-- salary_min: Minimum salary (number, null if not listed)
-- salary_max: Maximum salary (number, null if not listed)
-- url: Link to the full job posting
+┌─────────────────┐     ┌─────────────────┐
+│   Web Dashboard │     │   Worker        │
+│   (Next.js)     │     │   (Node.js)     │
+└────────┬────────┘     └────────┬────────┘
+         │                       │
+         │    ┌──────────────────┤
+         │    │                  │
+         ▼    ▼                  ▼
+┌─────────────────┐     ┌─────────────────┐
+│   Supabase      │     │   Ollama/OpenAI │
+│   (Postgres)    │     │   (LLM)         │
+└─────────────────┘     └─────────────────┘
 ```
 
 ## Project Structure
@@ -124,24 +86,93 @@ Extract job postings from this page. For each job, return:
 ```
 crawl-forge/
 ├── apps/
-│   ├── web/                 # Next.js dashboard
-│   └── worker/              # Crawler worker service
+│   ├── web/          # Next.js dashboard
+│   └── worker/       # Background job processor
 ├── packages/
-│   ├── db/                  # Database schema & migrations
-│   ├── crawler/             # Core crawling logic
-│   ├── extractor/           # LLM extraction logic
-│   └── shared/              # Shared types & utilities
-├── supabase/
-│   ├── migrations/          # SQL migrations
-│   └── seed.sql             # Development seed data
-└── docker/
-    └── docker-compose.yml   # Local development stack
+│   ├── shared/       # Shared types and schemas
+│   ├── crawler/      # Playwright crawling logic
+│   └── extractor/    # LLM integration
+├── supabase/         # Database migrations
+└── docker/           # Docker setup
 ```
 
-## License
+## Configuration
 
-MIT
+### Environment Variables
+
+```bash
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-key
+
+# LLM Provider (worker)
+LLM_PROVIDER=ollama  # or 'openai'
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.2:3b
+
+# OpenAI (if using)
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini
+```
+
+### Extraction Prompts
+
+Write natural language prompts to describe what data you want:
+
+```
+Extract all job listings from this page. For each job, return:
+- title: The job title
+- company: Company name
+- location: Job location (remote, city, etc)
+- salary: Salary range if mentioned
+- url: Link to the full posting
+```
+
+The LLM will parse the page content and return structured JSON matching your description.
+
+## API
+
+CrawlForge uses Supabase as its backend. You can query data directly:
+
+```typescript
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(url, key);
+
+// Get all crawlers
+const { data } = await supabase.from('crawlers').select('*');
+
+// Get extraction results
+const { data: results } = await supabase
+  .from('extraction_results')
+  .select('*, crawlers(name)')
+  .order('created_at', { ascending: false });
+```
+
+## Deployment
+
+### Supabase Cloud
+
+1. Create a project at [supabase.com](https://supabase.com)
+2. Run migrations: `supabase db push --linked`
+3. Update `.env` with production URLs
+
+### Vercel (Dashboard)
+
+```bash
+cd apps/web
+vercel
+```
+
+### Worker
+
+Deploy the worker to any Node.js host (Railway, Render, Fly.io, etc).
 
 ## Contributing
 
-Contributions welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup and guidelines.
+
+## License
+
+MIT - see [LICENSE](./LICENSE)
