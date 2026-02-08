@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # Supabase (local development)
+  # Use `pnpm supabase start` instead for full Supabase local
+
+  # Ollama for local LLM
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          memory: 4G
+
+  # Worker service
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.worker
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL:-http://host.docker.internal:54321}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - LLM_PROVIDER=ollama
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama3.2:3b
+    depends_on:
+      - ollama
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  ollama_data:

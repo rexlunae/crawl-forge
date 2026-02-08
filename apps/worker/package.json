@@ -1,0 +1,23 @@
+{
+  "name": "@crawl-forge/worker",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@crawl-forge/crawler": "workspace:*",
+    "@crawl-forge/extractor": "workspace:*",
+    "@crawl-forge/shared": "workspace:*",
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  }
+}
