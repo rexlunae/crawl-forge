@@ -1,0 +1,20 @@
+{
+  "name": "@crawl-forge/extractor",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint src/",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@crawl-forge/shared": "workspace:*",
+    "openai": "^4.28.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "vitest": "^1.2.0"
+  }
+}
