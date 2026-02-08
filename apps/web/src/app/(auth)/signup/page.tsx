@@ -56,7 +56,7 @@ export default function SignupPage() {
     }
   };
 
-  const handleOAuthLogin = async (provider: 'github' | 'google') => {
+  const handleOAuthLogin = async (provider: 'github' | 'google' | 'keycloak') => {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -164,13 +164,18 @@ export default function SignupPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" onClick={() => handleOAuthLogin('github')}>
-              GitHub
+          <div className="space-y-3">
+            <Button variant="outline" className="w-full" onClick={() => handleOAuthLogin('keycloak')}>
+              🔐 Sign up with Authentik (SSO)
             </Button>
-            <Button variant="outline" onClick={() => handleOAuthLogin('google')}>
-              Google
-            </Button>
+            <div className="grid grid-cols-2 gap-4">
+              <Button variant="outline" onClick={() => handleOAuthLogin('github')}>
+                GitHub
+              </Button>
+              <Button variant="outline" onClick={() => handleOAuthLogin('google')}>
+                Google
+              </Button>
+            </div>
           </div>
         </CardContent>
 
